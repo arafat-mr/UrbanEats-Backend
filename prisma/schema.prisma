@@ -12,3 +12,133 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+model User {
+  id        String     @id @default(uuid())
+  name      String     @db.VarChar(250)
+  email     String     @unique
+  password  String
+  role      UserRole   @default(CUSTOMER)
+  image     String?
+  phone     String?
+  status    Status     @default(ACTIVE)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  orders    Order[]
+  providers Provider[]
+
+  @@map("Users")
+}
+
+model Provider {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  restaurantName String
+  description    String?
+  address        String?
+  phone          String?
+  isApproved     Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  meals          Meal[]
+
+  @@index([restaurantName])
+  @@map("Providers")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  image     String?
+  meals     Meal[]
+
+  @@index([name])
+  @@map("Categories")
+}
+
+model Meal {
+  id          String   @id @default(uuid())
+  providerId  String
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  provider    Provider @relation(fields: [providerId], references: [id])
+  name        String
+  description String
+  price       Int
+  image       String
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  reviews     Review[]
+
+  @@index([providerId])
+  @@map("Meals")
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  customerId      String
+  providerId      String
+  totalAmount     Int
+  user            User        @relation(fields: [customerId], references: [id])
+  paymentMethod   String      @default("Cash On Delivery")
+  orderStatus     OrderStatus @default(PLACED)
+  deliveryAddress String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  orderItems      OrderItem[]
+
+  @@index([providerId])
+  @@map("Orders")
+}
+
+model OrderItem {
+  id       String @id @default(uuid())
+  orderId  String
+  order    Order  @relation(fields: [orderId], references: [id])
+  mealId   String
+  quantity Int
+  price    Int
+
+  @@index([orderId])
+  @@map("OrderItems")
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  mealId     String
+  meal       Meal     @relation(fields: [mealId], references: [id])
+  customerId String
+  orderId    String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([mealId])
+  @@map("Reviews")
+}
+
+enum OrderStatus {
+  PLACED
+  PREPARING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+  PROVIDER
+}
+
+enum Status {
+  ACTIVE
+  SUSPENDED
+}
