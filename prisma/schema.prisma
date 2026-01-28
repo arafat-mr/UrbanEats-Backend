@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
   provider = "prisma-client"
@@ -17,7 +12,7 @@ model User {
   id        String     @id @default(uuid())
   name      String     @db.VarChar(250)
   email     String     @unique
-  password  String
+ 
   role      UserRole   @default(CUSTOMER)
   image     String?
   phone     String?
@@ -26,6 +21,10 @@ model User {
   updatedAt DateTime   @updatedAt
   orders    Order[]
   providers Provider[]
+
+  emailVerified Boolean   @default(false)
+  sessions      Session[]
+  accounts      Account[]
 
   @@map("Users")
 }
@@ -62,19 +61,20 @@ model Category {
 }
 
 model Meal {
-  id          String   @id @default(uuid())
-  providerId  String
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id])
-  provider    Provider @relation(fields: [providerId], references: [id])
+  id          String              @id @default(uuid())
+  providerId  String?
+  categoryId  String?
+  category    Category?           @relation(fields: [categoryId], references: [id])
+  provider    Provider?           @relation(fields: [providerId], references: [id])
   name        String
   description String
   price       Int
   image       String
-  isAvailable Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isAvailable Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
   reviews     Review[]
+  dietaryTags DietaryPreference[]
 
   @@index([providerId])
   @@map("Meals")
@@ -141,4 +141,64 @@ enum UserRole {
 enum Status {
   ACTIVE
   SUSPENDED
+}
+
+enum DietaryPreference {
+  VEGETARIAN
+
+  HALAL
+
+  VEGAN
+
+  GLUTEN_FREE
+
+  DAIRY_FREE
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
 }
