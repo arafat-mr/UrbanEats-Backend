@@ -12,4 +12,6 @@ router.post('/', middleWare(UserRole.PROVIDER,UserRole.ADMIN),MealController.add
 // get 
 
 router.get('/',MealController.getMeal)
+
+router.get('/:postId',MealController.getMealById)
 export const MealRouters :Router=router

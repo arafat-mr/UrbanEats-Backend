@@ -1,3 +1,4 @@
+
 import { Meal } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 
@@ -31,6 +32,9 @@ type GetMealPayload = {
   dietary?: string | undefined;   // single dietary tag
   minPrice?: number | undefined;
   maxPrice?: number | undefined;
+  page?:number ;
+  limit?:number ;
+  skip?:number
 };
 
 const getMeal = async (payload : GetMealPayload) => {
@@ -69,16 +73,51 @@ const getMeal = async (payload : GetMealPayload) => {
     if (payload.maxPrice !== undefined) whereCondition.price.lte = payload.maxPrice;
   }
 
-  const result = await prisma.meal.findMany({
-    
-    where :  whereCondition ,
-    
-  });
 
-  return result;
+const [meals, total] = await Promise.all([
+    prisma.meal.findMany({
+      where: whereCondition,
+      skip: payload.skip ?? 0,
+      take: payload.limit ?? 5,
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.meal.count({
+      where: whereCondition,
+    }),
+  ]);
+
+  return {
+    data: meals,
+    meta: {
+      page: payload.page ?? 1,
+      limit: payload.limit ?? 5,
+      total,
+      totalPages: Math.ceil(total / (payload.limit ?? 5)),
+    },
+  };
 };
+
+
+
+const getMealById= async (postId : string)=>{
+//  console.log('Get post by id');
+
+
+return await prisma.meal.findUnique({
+  where :{
+    id :postId
+  }
+})
+ 
+}
+
+
+
 
 export const MealService = {
   addMeal,
   getMeal,
+  getMealById
 };
