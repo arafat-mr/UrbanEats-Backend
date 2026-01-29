@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { MealService } from "./meals.service";
 import { paginationHelper } from "../../helper/paginationHelper";
+import { prisma } from "../../lib/prisma";
+import { success } from "better-auth";
+
 
 
 const addMeal= async(req:Request,res:Response)=>{
@@ -13,7 +16,15 @@ const addMeal= async(req:Request,res:Response)=>{
         })
            }
            
-           
+        const userstatus= await prisma.user.findFirst({
+            where :{
+                id :req.user.id
+            }
+        })   
+
+        if(userstatus?.status==='SUSPENDED'){
+            throw new Error('You are suspended')
+        }
         
          const result= await MealService.addMeal(req.body,req.user?.id as string)
 
@@ -57,13 +68,13 @@ const maxPriceValue = maxPrice ? parseInt(maxPrice as string, 10) : undefined;
 const getMealById= async(req:Request,res:Response)=>{
     try {
 
-        const {postId}= req.params
+        const {mealId}= req.params
         // console.log(postId);
-        if(!postId){
+        if(!mealId){
             throw new Error("Post id is required")
         }
         
-          const result = await MealService.getMealById(postId  as string)
+          const result = await MealService.getMealById(mealId  as string)
 
           res.status(200).json(result)
     } catch (error :any)  {
@@ -75,8 +86,89 @@ const getMealById= async(req:Request,res:Response)=>{
       
 }
 
+const getMyMeals=async(req:Request,res:Response)=>{
+    try {
+
+        if (!req.user) {
+            return res.status(400).json({
+                message: 'Unauthorized'
+            })
+        }
+
+        const {id: providerId}= req.user
+
+        console.log(providerId);
+        
+
+        const provider= await prisma.provider.findFirst({
+            where: {
+                userId: providerId
+            },
+            
+        })
+
+      
+        
+        
+        const result= await MealService.getMyMeals(provider?.id as string )
+        res.status(200).json(result)
+    } catch (error :any) {
+        res.status(400).json({
+            error :error.message,
+            message :'Error adding meal'
+        })
+    }
+}
+
+
+const deleteMeal = async (req:Request,res:Response)=>{
+    try {
+
+        const {mealId} = req.params
+         const result= await MealService.deleteMeal(mealId as string)
+
+         res.status(200).json({success:true,message:"Deleted successfully"})
+    } catch (error:any) {
+        res.status(400).json({
+            error :error.message,
+            message :'Error deleting meal'
+        })
+    }
+}
+const updateMeal=async(req:Request,res:Response)=>{
+    try {
+
+        const {mealId}= req.params
+        
+        if(!req.user){
+            return res.status(400).json({
+                message :'Unauthorized'
+            })
+        }
+        
+        const {id}= req.user
+
+
+        const result =await MealService.updateMeal(id as string,req.body,mealId as string)
+        res.status(200).json({success:true,message:"updated successfully",result})
+    } catch (error :any) {
+          res.status(400).json({
+            error :error.message,
+            message :'Error fetching meal by id'
+        })
+    }
+}
+
+
+
+
 export const MealController ={
     addMeal,
     getMeal,
-    getMealById
+    getMealById,
+    updateMeal,
+    getMyMeals,
+    deleteMeal
+  
+   
 }

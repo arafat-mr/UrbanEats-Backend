@@ -32,7 +32,7 @@ model User {
 model Provider {
   id             String   @id @default(uuid())
   userId         String
-  user           User     @relation(fields: [userId], references: [id])
+  user           User     @relation(fields: [userId], references: [id],onDelete: Cascade)
   restaurantName String
   description    String?
   address        String?
@@ -65,7 +65,7 @@ model Meal {
   providerId  String?
   categoryId  String?
   category    Category?           @relation(fields: [categoryId], references: [id])
-  provider    Provider?           @relation(fields: [providerId], references: [id])
+  provider    Provider?           @relation(fields: [providerId], references: [id] , onDelete: Cascade)
   name        String
   description String
   price       Int
@@ -85,7 +85,7 @@ model Order {
   customerId      String
   providerId      String
   totalAmount     Int
-  user            User        @relation(fields: [customerId], references: [id])
+  user            User        @relation(fields: [customerId], references: [id],onDelete: Cascade)
   paymentMethod   String      @default("Cash On Delivery")
   orderStatus     OrderStatus @default(PLACED)
   deliveryAddress String
@@ -100,7 +100,7 @@ model Order {
 model OrderItem {
   id       String @id @default(uuid())
   orderId  String
-  order    Order  @relation(fields: [orderId], references: [id])
+  order    Order  @relation(fields: [orderId], references: [id],onDelete: Cascade)
   mealId   String
   quantity Int
   price    Int
@@ -112,7 +112,7 @@ model OrderItem {
 model Review {
   id         String   @id @default(uuid())
   mealId     String
-  meal       Meal     @relation(fields: [mealId], references: [id])
+  meal       Meal     @relation(fields: [mealId], references: [id],onDelete: Cascade)
   customerId String
   orderId    String
   rating     Int

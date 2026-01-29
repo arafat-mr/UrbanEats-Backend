@@ -13,5 +13,14 @@ router.post('/', middleWare(UserRole.PROVIDER,UserRole.ADMIN),MealController.add
 
 router.get('/',MealController.getMeal)
 
-router.get('/:postId',MealController.getMealById)
+router.get('/myMeals',middleWare(UserRole.PROVIDER),MealController.getMyMeals)
+router.get('/:mealId',MealController.getMealById)
+// update 
+router.patch('/:mealId', middleWare(UserRole.PROVIDER,UserRole.ADMIN),MealController.updateMeal)
+
+// update only status 
+
+
+// delete
+router.delete('/:mealId',middleWare(UserRole.PROVIDER,UserRole.ADMIN),MealController.deleteMeal)
 export const MealRouters :Router=router

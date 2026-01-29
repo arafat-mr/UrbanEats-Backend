@@ -101,23 +101,71 @@ const [meals, total] = await Promise.all([
 
 
 
-const getMealById= async (postId : string)=>{
-//  console.log('Get post by id');
+const getMealById= async (mealId : string)=>{
+
 
 
 return await prisma.meal.findUnique({
   where :{
-    id :postId
+    id :mealId
   }
 })
  
 }
 
 
+   const getMyMeals= async(providerId: string)=>{
+        return await prisma.meal.findMany({
+          where:{
+            providerId : providerId
+          },
+          orderBy :{
+                createdAt :"desc"
+            }
+        })
+   }
+
+
+
+   const deleteMeal = async (mealId : string)=>{
+       return await prisma.meal.delete({
+        where :{
+          id :mealId
+        }
+       })
+   }
+//userId   updated data  mealid
+const updateMeal=async(providerId : string, data :{name?:string,description ?:string,price?:number,image?:string},mealId:string)=>{
+console.log(providerId,data,mealId);
+
+const mealdata= await prisma.meal.findFirst({
+  where :{
+    id :mealId
+  },
+  select:{
+    id :true
+  }
+})
+
+if(!mealdata){
+  throw new Error("No data exists")
+}
+
+return await prisma.meal.update({
+  where :{
+    id : mealId
+  },
+  data
+})
+}
 
 
 export const MealService = {
   addMeal,
   getMeal,
-  getMealById
-};
+  getMealById,
+  getMyMeals,
+  deleteMeal,
+  updateMeal
+  
+}
