@@ -136,7 +136,7 @@ return await prisma.meal.findUnique({
    }
 //userId   updated data  mealid
 const updateMeal=async(providerId : string, data :{name?:string,description ?:string,price?:number,image?:string},mealId:string)=>{
-console.log(providerId,data,mealId);
+
 
 const mealdata= await prisma.meal.findFirst({
   where :{
@@ -160,12 +160,15 @@ return await prisma.meal.update({
 }
 
 
+
+ 
 export const MealService = {
   addMeal,
   getMeal,
   getMealById,
   getMyMeals,
   deleteMeal,
-  updateMeal
+  updateMeal,
+  
   
 }

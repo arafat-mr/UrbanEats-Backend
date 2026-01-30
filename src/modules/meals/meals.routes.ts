@@ -21,6 +21,7 @@ router.patch('/:mealId', middleWare(UserRole.PROVIDER,UserRole.ADMIN),MealContro
 // update only status 
 
 
+
 // delete
 router.delete('/:mealId',middleWare(UserRole.PROVIDER,UserRole.ADMIN),MealController.deleteMeal)
 export const MealRouters :Router=router

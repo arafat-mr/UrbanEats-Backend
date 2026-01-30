@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { ProvidersService } from "./providers.service";
 import { paginationHelper } from "../../helper/paginationHelper";
+import { prisma } from "../../lib/prisma";
+import { success } from "better-auth";
 
 
 const getProviders = async (req: Request, res: Response) => {
@@ -39,7 +41,81 @@ const getProvidersById= async(req:Request,res:Response)=>{
             })
         }
 }
+
+const getOrdersForProvider = async (req: any, res: Response) => {
+  try {
+    const userId = req.user.id; // User ID
+    console.log(userId);
+    
+
+    const orders = await ProvidersService.getOrdersByProvider(userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Orders fetched successfully",
+     
+      data: orders,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+const getOrdersByProviderByid= async(req:Request,res:Response)=>{
+
+   const {id} = req.params
+
+   
+   
+  try {
+    const result= await ProvidersService.getOrdersByProviderByid(id as string)
+
+    res.status(200).json({success:true,result})
+  } catch (error :any) {
+     res.status(400).json({
+                error :error.message,
+                message :'Error fetching orders by id'
+            })
+  }
+}
+
+const mealStatusUpdate= async (req: any, res: Response) => {
+    try {
+      const providerId = req.user.id; 
+      const { id: orderId } = req.params;
+      const { status } = req.body;
+
+      if (!status) {
+        return res.status(400).json({
+          success: false,
+          message: "Status is required",
+        });
+      }
+
+      const updatedOrder = await ProvidersService.mealStatusUpdate(
+        
+        orderId,
+        status
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Order status updated successfully",
+        data: updatedOrder,
+      });
+    } catch (err: any) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+      });
+    }
+  }
+
+
 export const ProvidersController = {
   getProviders,
-  getProvidersById
+  getProvidersById,
+  getOrdersForProvider,
+  getOrdersByProviderByid,
+  mealStatusUpdate
 };
