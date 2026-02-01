@@ -11,6 +11,7 @@ import { middleWare, UserRole } from "./middlewares/middleware";
 import { OrderController } from "./modules/orders/orders.controller";
 import { OrderRoutes } from "./modules/orders/orders.routes";
 import { ReviewsRouter } from "./modules/reviews/reviews.routes";
+import notFound from "./middlewares/notFound";
 const app: Application = express();
 
 app.use(express.json());
@@ -44,8 +45,12 @@ app.use('/orders',OrderRoutes)
 //reviews
 app.use('/reviews',ReviewsRouter)
 
+
+// not found
+
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello from UrbanEats");
 });
+app.use(notFound)
 
 export default app;
