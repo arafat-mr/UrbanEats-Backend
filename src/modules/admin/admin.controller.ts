@@ -6,27 +6,26 @@ import { UserRole } from "../../middlewares/middleware";
 import { paginationHelper } from "../../helper/paginationHelper";
 
 
-const getUsers=async(req:Request,res:Response)=>{
-
-   
-     
-   try {
+export const getUsers = async (req: Request, res: Response) => {
+  try {
     if (!req.user || req.user.role !== UserRole.ADMIN)
       return res.status(403).json({ message: "Unauthorized" });
 
-    const { page, limit } = paginationHelper(req.query);
+    
+    const { page, limit, skip } = paginationHelper(req.query);
 
-    const result = await AdminService.getUsers({
-      page: page ?? 1,
-      limit: limit ?? 10,
+   
+    const result = await AdminService.getUsers({ page, limit, skip });
+
+    res.status(200).json({
+      success: true,
+      message: "Users fetched",
+      result,
     });
-
-    res.status(200).json({ success: true, message: "Users fetched", result });
   } catch (error: any) {
     res.status(400).json({ success: false, message: error.message });
   }
-}
-
+};
 const updateUserstatus = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -54,7 +53,55 @@ const updateUserstatus = async (req: Request, res: Response) => {
   }
 };
 
+
+const getOrders = async (req: Request, res: Response) => {
+  try {
+    // Only admins
+    if (!req.user || req.user.role !== "ADMIN") {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    // Pagination
+    const { page, limit, skip } = paginationHelper(req.query);
+
+    const result = await AdminService.getOrders({ page, limit, skip });
+
+    res.status(200).json({
+      success: true,
+      message: "Orders fetched",
+      result,
+    });
+  } catch (err: any) {
+    console.error(err);
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+const getCategories = async (req: Request, res: Response) => {
+  try {
+    // Only admin access
+    if (!req.user || req.user.role !== 'ADMIN') {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
+
+    // Pagination
+    const { page, limit, skip } = paginationHelper(req.query);
+
+    const result = await AdminService.getCategories({ page, limit, skip });
+
+    res.status(200).json({
+      success: true,
+      message: 'Categories fetched',
+      result,
+    });
+  } catch (err: any) {
+    console.error(err);
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
 export const AdminContoller= {
     getUsers,
-    updateUserstatus
+    updateUserstatus,
+    getOrders,
+    getCategories
 }

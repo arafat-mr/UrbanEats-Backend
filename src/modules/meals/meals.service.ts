@@ -78,7 +78,7 @@ const [meals, total] = await Promise.all([
     prisma.meal.findMany({
       where: whereCondition,
       skip: payload.skip ?? 0,
-      take: payload.limit ?? 5,
+      take: payload.limit ?? 10,
       orderBy: {
         createdAt: "desc",
       },
@@ -92,9 +92,9 @@ const [meals, total] = await Promise.all([
     data: meals,
     meta: {
       page: payload.page ?? 1,
-      limit: payload.limit ?? 5,
+      limit: payload.limit ?? 10,
       total,
-      totalPages: Math.ceil(total / (payload.limit ?? 5)),
+      totalPages: Math.ceil(total / (payload.limit ?? 10)),
     },
   };
 };
@@ -108,6 +108,18 @@ const getMealById= async (mealId : string)=>{
 return await prisma.meal.findUnique({
   where :{
     id :mealId
+  },
+  include:{
+    provider:{
+      select:{
+        id:true,
+        user: {
+          select:{
+            name:true
+          }
+        }
+      }
+    }
   }
 })
  

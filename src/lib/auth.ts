@@ -9,7 +9,7 @@ export const auth = betterAuth({
     database: prismaAdapter(prisma, {
         provider: "postgresql",
     }),
-    trustedOrigins:[process.env.APP_URL || "http://localhost:4000"],
+    trustedOrigins:[process.env.APP_URL || "http://localhost:3000"],
      user:{
      additionalFields:{
         role:{
@@ -33,10 +33,11 @@ export const auth = betterAuth({
     requireEmailVerification: false
   },  socialProviders: {
         google: { 
-            prompt:'select_account consent',
-            accessType:'offline',
+            
             clientId: process.env.GOOGLE_CLIENT_ID as string, 
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string, 
+            prompt:'select_account consent',
+            accessType:'offline',
         }, 
     },
 });

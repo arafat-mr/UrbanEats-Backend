@@ -21,11 +21,11 @@ async function seedAdmin(){
             throw new Error('Already exists')
         }
 
-        const signUpAdmin= await fetch("http://localhost:3000/api/auth/sign-up/email",{
+        const signUpAdmin= await fetch("http://localhost:5000/api/auth/sign-up/email",{
             method :"POST",
             headers :{
                 "content-type":"application/json",
-                origin:"http://localhost:4000"
+                origin:"http://localhost:3000"
             },
             body :JSON.stringify(adminData)
         })

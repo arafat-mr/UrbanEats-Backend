@@ -17,6 +17,33 @@ const getCurrentUser=async(req:Request,res:Response)=>{
   }
 }
 
+
+const updateCurrentUser = async (req: Request, res: Response) => {
+  try {
+    if (!req.user?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const userId = req.user.id as string;
+
+   
+    const { name, phone, image } = req.body;
+
+    const result = await AuthService.updateCurrentUser(userId, {
+      name,
+      phone,
+      image,
+    });
+
+    res.status(200).json({
+      message: "Profile updated successfully",
+      data: result,
+    });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+};
+
 export const Authcontroller={
-    getCurrentUser
+    getCurrentUser,updateCurrentUser
 }

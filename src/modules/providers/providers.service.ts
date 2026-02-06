@@ -116,10 +116,18 @@ const mealStatusUpdate= async (
     return updatedOrder;
   }
 
+
+  const createProvider=async(userId: string)=>{
+  
+    return await prisma.provider.create({
+    data:{userId}
+    })
+  }
+
 export const ProvidersService = {
   getProviders,
   getProvidersById,
   getOrdersByProvider,
   getOrdersByProviderByid,
-  mealStatusUpdate
+  mealStatusUpdate,createProvider
 };

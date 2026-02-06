@@ -16,7 +16,7 @@ const createOrder = async (req: Request, res: Response) => {
       success: true,
       message: "Saved to cart successfully",
       data: order,
-    });
+    }); 
   } catch (error: any) {
     res.status(400).json({
       success: false,
@@ -44,12 +44,13 @@ const getMyOrders = async (req: Request, res: Response) => {
   }
 };
 
- const placeOrder = async (req: any, res: Response) => {
+const placeOrder = async (req: any, res: Response) => {
   try {
     const customerId = req.user.id;
     const { orderId } = req.params;
+    const { deliveryAddress, items } = req.body; // optional updates
 
-    const order = await OrderService.placeOrder(customerId, orderId);
+    const order = await OrderService.placeOrder(customerId, orderId, { deliveryAddress, items });
 
     return res.status(200).json({
       success: true,
@@ -60,6 +61,7 @@ const getMyOrders = async (req: Request, res: Response) => {
     return res.status(400).json({ success: false, message: err.message });
   }
 };
+
  const cancelCustomerOrder = async (req: any, res: Response) => {
   try {
     const customerId = req.user.id;

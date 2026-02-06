@@ -112,10 +112,34 @@ const mealStatusUpdate= async (req: any, res: Response) => {
   }
 
 
+  const createProvider= async(req:Request,res:Response)=>{
+
+    const {userId}= req.body
+    try {
+      if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "userId is required",
+      });
+    }
+      const  result= await ProvidersService.createProvider(userId as string)
+      res.status(201).json({
+      success: true,
+      message: "Provider created successfully",
+      data: result,
+    }); 
+    } catch (error:any) {
+        return res.status(400).json({
+          success: false,
+          message: "Error creating provider",
+        });
+    }
+  }
+
 export const ProvidersController = {
   getProviders,
   getProvidersById,
   getOrdersForProvider,
   getOrdersByProviderByid,
-  mealStatusUpdate
+  mealStatusUpdate,createProvider
 };

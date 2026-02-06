@@ -17,6 +17,6 @@ router.patch("/status/:orderId", middleWare(UserRole.ADMIN,UserRole.PROVIDER ), 
 router.patch("/place/:orderId", middleWare(UserRole.CUSTOMER), OrderController.placeOrder);
 router.patch("/cancel/:orderId", middleWare(UserRole.CUSTOMER), OrderController.cancelCustomerOrder);
 
-
+ 
 router.delete('/delete/:orderId',middleWare(UserRole.CUSTOMER),OrderController.deleteCustomerOrder)
 export const OrderRoutes = router;

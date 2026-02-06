@@ -12,13 +12,14 @@ import { OrderController } from "./modules/orders/orders.controller";
 import { OrderRoutes } from "./modules/orders/orders.routes";
 import { ReviewsRouter } from "./modules/reviews/reviews.routes";
 import notFound from "./middlewares/notFound";
+import { AnalyticsRouter } from "./modules/analytics/analytics.route";
 const app: Application = express();
 
 app.use(express.json());
 app.use(
   cors({
-    origin:  process.env.APP_URL || "http://localhost:4000",
-    credentials: true,
+    origin:  process.env.APP_URL || "http://localhost:3000",
+    credentials: true
   }),
 );
 app.all("/api/auth/*splat", toNodeHandler(auth));
@@ -47,6 +48,10 @@ app.use('/reviews',ReviewsRouter)
 
 
 // not found
+ 
+// analytlics 
+
+app.use('/analytics',AnalyticsRouter)
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello from UrbanEats");

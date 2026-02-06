@@ -18,4 +18,5 @@ router.patch(
   ProvidersController.mealStatusUpdate
   
 );
+router.post('/',ProvidersController.createProvider)
 export const ProvidersRouter: Router = router;

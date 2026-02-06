@@ -12,7 +12,7 @@ export const   paginationHelper=(options :PaginationOptions):PaginationOptionsRe
     //  console.log(options);
 
     const page :number =Number(options.page  )|| 1;
-    const limit :number=Number(options.limit) || 5
+    const limit :number=Number(options.limit) || 10
     const skip:number= (page-1) * limit
 
 console.log(options);

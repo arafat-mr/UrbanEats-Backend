@@ -6,11 +6,14 @@ interface CreateOrderPayload {
   providerId: string;
   deliveryAddress: string;
   items: {
-    mealId: string;
+    mealId: string; 
     quantity: number;
   }[];
 }
-
+interface UpdateBeforePlace {
+  deliveryAddress?: string;
+  items?: { mealId: string; quantity: number }[];
+}
 const createOrder = async (customerId: string, payload: CreateOrderPayload) => {
   const { providerId, deliveryAddress, items } = payload;
 
@@ -64,20 +67,53 @@ const getMyOrders = async (customerId: string) => {
 };
  
   
-const placeOrder = async (customerId: string, orderId: string) => {
-  
+const placeOrder = async (
+  customerId: string,
+  orderId: string,
+  updateData?: UpdateBeforePlace
+) => {
+  // fetch order
   const order = await prisma.order.findFirst({
     where: { id: orderId, customerId, orderStatus: "CART" },
     include: { orderItems: true },
   });
 
-  if (!order) {
-    throw new Error("Order not found or already placed");
+  if (!order) throw new Error("Order not found or already placed");
+
+  // update delivery address if provided
+  if (updateData?.deliveryAddress) {
+    order.deliveryAddress = updateData.deliveryAddress;
   }
 
+  // update quantities if items provided
+  if (updateData?.items) {
+    for (const item of updateData.items) {
+      const orderItem = order.orderItems.find(oi => oi.mealId === item.mealId);
+      if (orderItem) {
+        orderItem.quantity = item.quantity;
+      } else {
+        throw new Error(`Meal ${item.mealId} not found in order`);
+      }
+    }
+  }
+
+  // calculate total
+  const totalAmount = order.orderItems.reduce((sum, oi) => sum + oi.price * oi.quantity, 0);
+
+  // update order in DB
   const updatedOrder = await prisma.order.update({
     where: { id: orderId },
-    data: { orderStatus: "PLACED" },
+    data: {
+      orderStatus: "PLACED",
+      deliveryAddress: order.deliveryAddress,
+      totalAmount,
+      orderItems: {
+        update: order.orderItems.map(oi => ({
+          where: { id: oi.id },
+          data: { quantity: oi.quantity },
+        })),
+      },
+    },
     include: { orderItems: true },
   });
 

@@ -9,4 +9,7 @@ const router= express.Router()
 
 router.get('/users',middleWare(UserRole.ADMIN),AdminContoller.getUsers)
 router.patch('/users/:userId',middleWare(UserRole.ADMIN),AdminContoller.updateUserstatus)
+
+router.get('/orders',middleWare(UserRole.ADMIN),AdminContoller.getOrders)
+router.get('/categories',middleWare(UserRole.ADMIN),AdminContoller.getCategories)
 export const AdminRoutes:Router=router
