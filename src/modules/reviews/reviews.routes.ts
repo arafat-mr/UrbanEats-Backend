@@ -5,13 +5,10 @@ import { ReviewsController } from "./reviews.controller";
 
 const router = Router();
 
-// Post a review
-router.post("/", middleWare(UserRole.CUSTOMER,UserRole.ADMIN,UserRole.PROVIDER), ReviewsController.createReview);
+router.get("/can-review/:mealId", middleWare(UserRole.CUSTOMER), ReviewsController.canReview);
 
-// Get all reviews for a meal
-// router.get("/meal/:mealId", );
+router.post("/", middleWare(UserRole.CUSTOMER), ReviewsController.createReview);
 
-// // Get all reviews by a customer
-// router.get("/my-reviews", middleWare(UserRole.CUSTOMER), );
+router.get('/meal/:mealId',middleWare(UserRole.ADMIN,UserRole.CUSTOMER,UserRole.PROVIDER),ReviewsController.getMealReviews)
 
 export const ReviewsRouter = router;

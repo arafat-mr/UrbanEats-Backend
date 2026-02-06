@@ -1,17 +1,43 @@
 import { Request, Response } from "express";
 import { ReviewsService } from "./reviews.service";
 
+const canReview = async (req: Request, res: Response) => {
+  try {
+    const customerId = req.user?.id;
+    const { mealId } = req.params;
+
+    if (!customerId) {
+      return res.status(401).json({ canReview: false });
+    }
+
+    // Use service to get delivered order containing this meal
+    const orderId = await ReviewsService.canReviewMeal(
+      customerId,
+      mealId as string
+    );
+
+    if (!orderId) {
+      return res.json({ canReview: false, orderId: null });
+    }
+
+    // Customer can review, return orderId for posting review
+    return res.json({ canReview: true, orderId });
+  } catch (err: any) {
+    console.error(err);
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+
 const createReview = async (req: Request, res: Response) => {
   try {
     const customerId = req.user?.id;
-    if (!customerId) {
-      return res.status(401).json({ success: false, message: "Unauthorized" });
-    }
+    if (!customerId) return res.status(401).json({ message: "Unauthorized" });
 
     const { mealId, orderId, rating, comment } = req.body;
 
     const review = await ReviewsService.createReview({
-      customerId, // Now TS knows it's a string
+      customerId,
       mealId,
       orderId,
       rating,
@@ -20,10 +46,25 @@ const createReview = async (req: Request, res: Response) => {
 
     res.status(201).json({ success: true, data: review });
   } catch (err: any) {
+    console.error(err);
     res.status(400).json({ success: false, message: err.message });
   }
 };
 
-export const ReviewsController={
-    createReview
-}
+const getMealReviews = async (req: Request, res: Response) => {
+  try {
+    const { mealId } = req.params;
+    if (!mealId) return res.status(400).json({ message: "mealId is required" });
+
+    const reviews = await ReviewsService.getMealReviews(mealId as string);
+    res.json({ data: reviews });
+  } catch (err: any) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+};
+export const ReviewsController = {
+  canReview,
+  createReview,
+  getMealReviews
+};

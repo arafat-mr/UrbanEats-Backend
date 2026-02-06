@@ -5,8 +5,28 @@ interface CreateReviewInput {
   mealId: string;
   orderId: string;
   rating: number;
-  comment?: string | undefined;
+  comment?: string;
 }
+
+
+
+const canReviewMeal = async (customerId: string, mealId: string) => {
+  const orderItem = await prisma.orderItem.findFirst({
+    where: {
+      mealId,
+      order: {
+        customerId,
+        orderStatus: "DELIVERED",
+      },
+    },
+    select: {
+      orderId: true,
+    },
+  });
+
+  return orderItem?.orderId || null;
+};
+
 
 const createReview = async ({
   customerId,
@@ -15,33 +35,57 @@ const createReview = async ({
   rating,
   comment,
 }: CreateReviewInput) => {
-  
+  // Validate that the customer can review this meal
   const orderItem = await prisma.orderItem.findFirst({
     where: {
       mealId,
       orderId,
-      order: { customerId }, 
+      order: { customerId, orderStatus: "DELIVERED" },
     },
   });
 
   if (!orderItem) {
-    throw new Error("You can only review meals you have ordered");
+    throw new Error("You can only review meals you have purchased and delivered.");
   }
 
- const reviewData = {
-  customerId,
-  mealId,
-  orderId,
-  rating,
-  comment: comment ?? null, // 
-};
   const review = await prisma.review.create({
-    data: reviewData
+    data: {
+      mealId,
+      orderId,
+      customerId,
+      rating,
+      comment: comment || null,
+    },
   });
 
   return review;
 };
 
-export const ReviewsService={
-    createReview
-}
+const getMealReviews = async (mealId: string) => {
+  // Fetch all reviews for the meal
+  const reviews = await prisma.review.findMany({
+    where: { mealId },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Fetch customer names for each review
+  const customerIds = [...new Set(reviews.map((review) => review.customerId))]; 
+  const customers = await prisma.user.findMany({
+    where: { id: { in: customerIds } },
+    select: { id: true, name: true },
+  });
+
+  // Map customer names into reviews
+  const reviewsWithCustomer = reviews.map((r) => ({
+    ...r,
+    customer: customers.find((c) => c.id === r.customerId) || { name: "Unknown" },
+  }));
+
+  return reviewsWithCustomer;
+};
+
+export const ReviewsService = {
+  canReviewMeal,
+  createReview,
+  getMealReviews
+};

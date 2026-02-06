@@ -21,6 +21,7 @@ const getProviders = async (payload: GetProvidersPayload) => {
         select: {
           name: true,
           email: true,
+          image:true
         },
       },
     },
@@ -46,7 +47,25 @@ const getProvidersById= async(providerId:string)=>{
 return await prisma.provider.findUnique({
     where :{
         id :providerId
+    },
+    include:{
+      user:{
+       select :{
+        name: true
+
+       }
+      },
+      meals:{
+       select:{
+        id:true,
+        name:true,
+        image:true,
+        description:true,
+       } 
+      }
     }
+    ,
+    
 })
 }
 
