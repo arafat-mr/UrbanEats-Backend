@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { AnalyticsService } from "./analytics.service";
+import { prisma } from "../../lib/prisma";
 
 
 
@@ -31,7 +32,37 @@ const getCustomerAnalytics = async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, message: err.message });
   }
 };
+
+  const getProvierAnalytics= async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = req.user
+
+   const provider= await prisma.provider.findFirst({
+    where:{
+     userId : user?.id as string
+    }
+   })
+
+      if (!provider) {
+        return res.status(401).json({
+          success: false,
+          message: "Unauthorized",
+        });
+      }
+
+      const analytics = await AnalyticsService.getProviderAnalytics(provider.id);
+
+      res.status(200).json({
+        success: true,
+        message: "Provider analytics fetched successfully",
+        data: analytics,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 export const AnayticsController={
     getAdminAnalytics,
-    getCustomerAnalytics
+    getCustomerAnalytics,
+    getProvierAnalytics
 }

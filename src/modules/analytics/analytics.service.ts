@@ -52,7 +52,45 @@ const getCustomerAnalytics = async (customerId: string) => {
   };
 };
 
+
+const getProviderAnalytics= async (providerId: string) => {
+    const totalDeliveredOrders = await prisma.order.count({
+      where: {
+        providerId,
+        orderStatus: "DELIVERED",
+      },
+    });
+
+    const revenue = await prisma.order.aggregate({
+      where: {
+        providerId,
+        orderStatus: "DELIVERED",
+      },
+      _sum: {
+        totalAmount: true,
+      },
+    });
+
+    const totalItemsSold = await prisma.orderItem.aggregate({
+      where: {
+        order: {
+          providerId,
+          orderStatus: "DELIVERED",
+        },
+      },
+      _sum: {
+        quantity: true,
+      },
+    });
+
+    return {
+      totalDeliveredOrders,
+      totalRevenue: revenue._sum.totalAmount || 0,
+      totalItemsSold: totalItemsSold._sum.quantity || 0,
+    };
+  }
 export const AnalyticsService={
     getAdminAnalytics,
-    getCustomerAnalytics
+    getCustomerAnalytics,
+    getProviderAnalytics
 }
