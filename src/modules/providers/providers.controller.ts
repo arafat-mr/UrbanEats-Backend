@@ -47,7 +47,7 @@ const getOrdersForProvider = async (req: any, res: Response) => {
     const userId = req.user.id; // User ID
     console.log(userId);
     
-
+ 
     const orders = await ProvidersService.getOrdersByProvider(userId);
 
     return res.status(200).json({

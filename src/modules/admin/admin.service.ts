@@ -148,9 +148,37 @@ const getCategories = async (payload: GetCategoriesPayload) => {
   };
 };
 
+const  updateCategory=async (id: string, data: { name?: string;  }) => {
+    try {
+      const updated = await prisma.category.update({
+        where: { id },
+        data,
+      });
+      return updated;
+    } catch (err: any) {
+      // Prisma throws error if id not found
+      if (err.code === "P2025") return null;
+      throw err;
+    }
+  }
+
+const deleteCategory=async (id: string) => {
+    try {
+      const deleted = await prisma.category.delete({
+        where: { id },
+      });
+      return deleted;
+    } catch (err: any) {
+      if (err.code === "P2025") return null;
+      throw err;
+    }
+  }
 export const AdminService={
 getUsers,
 updateUserstatus,
 getOrders,
-getCategories
+getCategories,
+updateCategory,
+deleteCategory
+
 }

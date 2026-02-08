@@ -12,4 +12,12 @@ router.patch('/users/:userId',middleWare(UserRole.ADMIN),AdminContoller.updateUs
 
 router.get('/orders',middleWare(UserRole.ADMIN),AdminContoller.getOrders)
 router.get('/categories',middleWare(UserRole.ADMIN),AdminContoller.getCategories)
+// Update category
+router.patch(
+  '/categories/:id',
+  middleWare(UserRole.ADMIN),
+  AdminContoller.updateCategory
+);
+router.delete("/categories/:id", middleWare(UserRole.ADMIN), AdminContoller.deleteCategory);
+
 export const AdminRoutes:Router=router

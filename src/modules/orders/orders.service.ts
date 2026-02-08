@@ -62,7 +62,9 @@ const getMyOrders = async (customerId: string) => {
         include: { meal: true }, 
       },
     },
-    orderBy: { createdAt: "desc" },
+    // orderBy: { createdAt: "desc" },
+    orderBy:{id:"desc"}
+    
   });
 };
  

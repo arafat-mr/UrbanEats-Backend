@@ -13,7 +13,7 @@ router.post('/', middleWare(UserRole.PROVIDER,UserRole.ADMIN),MealController.add
 
 router.get('/',MealController.getMeal)
 
-router.get('/myMeals',middleWare(UserRole.PROVIDER),MealController.getMyMeals)
+router.get('/myMeals/:userId',middleWare(UserRole.PROVIDER),MealController.getMyMeals)
 router.get('/:mealId',MealController.getMealById)
 // update 
 router.patch('/:mealId', middleWare(UserRole.PROVIDER,UserRole.ADMIN),MealController.updateMeal)

@@ -126,17 +126,44 @@ return await prisma.meal.findUnique({
 }
 
 
-   const getMyMeals= async(providerId: string)=>{
-        return await prisma.meal.findMany({
-          where:{
-            providerId : providerId
-          },
-          orderBy :{
-                createdAt :"desc"
-            }
-        })
-   }
+// const getMyMeals = async (userId : string ) => {
 
+//   const provider= await prisma.provider.findUnique({
+//     where :{
+//       userId : userId as string
+//     }
+//   })
+//   return await prisma.meal.findMany({
+//     where: {
+//       providerId: provider?.id as string ,   
+//     },
+//     orderBy: {
+//       createdAt: "desc",
+//     },
+//   });
+// };
+
+
+const getMyMeals= async (userId: string) => {
+  const provider = await prisma.provider.findFirst({
+    where: {
+      userId: userId,   
+    },
+  });
+
+  if (!provider) {
+    return [];
+  }
+
+  return await prisma.meal.findMany({
+    where: {
+      providerId: provider.id,  
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+};
 
 
    const deleteMeal = async (mealId : string)=>{

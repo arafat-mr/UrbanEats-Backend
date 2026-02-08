@@ -13,7 +13,7 @@ router.get(
 router.get('/my-orders/:id',ProvidersController.getOrdersByProviderByid)
 router.get("/:providerId", ProvidersController.getProvidersById);
 router.patch(
-  "/orders/:id",
+  "/orders/update/:id",
   middleWare(UserRole.PROVIDER,UserRole.ADMIN),
   ProvidersController.mealStatusUpdate
   

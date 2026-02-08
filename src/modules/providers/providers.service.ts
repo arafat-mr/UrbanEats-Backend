@@ -91,7 +91,7 @@ const getOrdersByProvider = async (providerId: string) => {
       },
       user: { select: { id: true, name: true, email: true } },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "desc" }
   });
 };
 
@@ -129,7 +129,7 @@ const mealStatusUpdate= async (
     const updatedOrder = await prisma.order.update({
       where: { id: orderId },
       data: { orderStatus: status },
-      include: { orderItems: true }, 
+      include: { orderItems: {include:{meal: true}} ,user: true,}, 
     });
 
     return updatedOrder;
