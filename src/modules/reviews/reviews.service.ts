@@ -84,8 +84,19 @@ const getMealReviews = async (mealId: string) => {
   return reviewsWithCustomer;
 };
 
+
+const getHotDeals= async()=>{
+  const hotMeals= await prisma.review.findMany({
+    orderBy:{rating:"desc"},
+    take:3,
+    include:{meal: true}
+  })
+  return hotMeals
+
+}
 export const ReviewsService = {
   canReviewMeal,
   createReview,
-  getMealReviews
+  getMealReviews,
+  getHotDeals
 };

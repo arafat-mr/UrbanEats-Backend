@@ -42,10 +42,11 @@ const addMeal= async(req:Request,res:Response)=>{
 const getMeal = async(req :Request,res:Response)=>{
     try {
 
-        const {search,dietary,minPrice,maxPrice}= req.query
+        const {search,dietary,minPrice,maxPrice,category}= req.query
         
 
         const searchValue= typeof search === 'string'?search : undefined
+        const categoryValue= typeof category === 'string'?category : undefined
         const dietaryValue= typeof dietary === 'string'? dietary : undefined
        const minPriceValue = minPrice ? parseInt(minPrice as string, 10) : undefined;
 const maxPriceValue = maxPrice ? parseInt(maxPrice as string, 10) : undefined;
@@ -54,7 +55,7 @@ const maxPriceValue = maxPrice ? parseInt(maxPrice as string, 10) : undefined;
   const {page,limit,skip} = paginationHelper(req.query)
     
   
-          const result = await MealService.getMeal({search : searchValue,dietary: dietaryValue,minPrice:minPriceValue,maxPrice:maxPriceValue,page: page ?? 1,limit: limit ?? 10,skip: skip ?? 0})
+          const result = await MealService.getMeal({search : searchValue,category:categoryValue,dietary: dietaryValue,minPrice:minPriceValue,maxPrice:maxPriceValue,page: page ?? 1,limit: limit ?? 10,skip: skip ?? 0})
 
           res.status(200).json(result)
     } catch (error :any) {

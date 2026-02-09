@@ -57,14 +57,25 @@ const getMealReviews = async (req: Request, res: Response) => {
     if (!mealId) return res.status(400).json({ message: "mealId is required" });
 
     const reviews = await ReviewsService.getMealReviews(mealId as string);
-    res.json({ data: reviews });
+    res.status(200).json({ data: reviews });
   } catch (err: any) {
     console.error(err);
     res.status(500).json({ message: err.message });
   }
 };
+const getHotDeals= async(req:Request,res:Response)=>{
+  
+
+  try {
+     const result= await ReviewsService.getHotDeals()
+    res.status(200).json(result)
+  } catch (error :any) {
+     res.status(500).json({ message: error.message });
+  }
+}
 export const ReviewsController = {
   canReview,
   createReview,
-  getMealReviews
+  getMealReviews,
+  getHotDeals
 };
