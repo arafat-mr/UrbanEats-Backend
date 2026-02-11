@@ -22,9 +22,8 @@ declare global {
    return async(req:Request,res:Response,next:NextFunction)=>{
     console.log('middleware');
     //session
-    
-      
-    const session= await betterAuth.api.getSession({
+      try {
+        const session= await betterAuth.api.getSession({
         headers: req.headers as any
     })
 
@@ -53,6 +52,11 @@ declare global {
         })
      }
     next()
+      } catch (error) {
+          next(error);
+      }
+      
+    
     
     
   }

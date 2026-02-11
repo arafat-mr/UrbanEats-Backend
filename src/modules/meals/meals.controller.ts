@@ -23,14 +23,20 @@ const addMeal= async(req:Request,res:Response)=>{
         })   
 
         if(userstatus?.status==='SUSPENDED'){
-            throw new Error('You are suspended')
+            return  res.status(400).json({
+            
+           
+            message :'you are suspended ,please contact admin'
+        })
         }
         
          const result= await MealService.addMeal(req.body,req.user?.id as string)
 
          res.status(201).json(result)
     } catch (error: any) {
+        console.log('error',error.message)   
         res.status(400).json({
+            
             error :error.message,
             message :'Error adding meal'
         })
