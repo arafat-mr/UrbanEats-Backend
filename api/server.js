@@ -242,14 +242,11 @@ var addMeal2 = async (req, res) => {
       }
     });
     if (userstatus?.status === "SUSPENDED") {
-      return res.status(400).json({
-        message: "you are suspended ,please contact admin"
-      });
+      throw new Error("You are suspended");
     }
     const result = await MealService.addMeal(req.body, req.user?.id);
     res.status(201).json(result);
   } catch (error) {
-    console.log("error", error.message);
     res.status(400).json({
       error: error.message,
       message: "Error adding meal"
@@ -357,25 +354,7 @@ var auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
-  secret: process.env.BETTER_AUTH_SECRET,
-  baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins: async (request) => {
-    const origin = request?.headers.get("origin");
-    const allowedOrigins2 = [
-      process.env.APP_URL,
-      process.env.BETTER_AUTH_URL,
-      "http://localhost:3000",
-      "http://localhost:4000",
-      "http://localhost:5000",
-      "https://urban-eats-backend.vercel.app",
-      "https://urban-eats-frontend.vercel.app"
-    ].filter(Boolean);
-    if (!origin || allowedOrigins2.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin)) {
-      return [origin];
-    }
-    return [];
-  },
-  basePath: "/api/auth",
+  trustedOrigins: [process.env.APP_URL || "http://localhost:3000"],
   user: {
     additionalFields: {
       role: {
@@ -405,23 +384,6 @@ var auth = betterAuth({
       prompt: "select_account consent",
       accessType: "offline"
     }
-  },
-  session: {
-    cookieCache: {
-      enabled: true,
-      maxAge: 5 * 60
-      // 5 minutes
-    }
-  },
-  advanced: {
-    cookiePrefix: "better-auth",
-    useSecureCookies: true,
-    // useSecureCookies: process.env.NODE_ENV === "production",
-    crossSubDomainCookies: {
-      enabled: true
-    },
-    disableCSRFCheck: true
-    // Allow requests without Origin header (Postman, mobile apps, etc.)
   }
 });
 
@@ -429,32 +391,28 @@ var auth = betterAuth({
 var middleWare = (...roles) => {
   return async (req, res, next) => {
     console.log("middleware");
-    try {
-      const session = await auth.api.getSession({
-        headers: req.headers
+    const session = await auth.api.getSession({
+      headers: req.headers
+    });
+    if (!session) {
+      return res.status(400).json({
+        success: false,
+        message: "You are not authorized"
       });
-      if (!session) {
-        return res.status(400).json({
-          success: false,
-          message: "You are not authorized"
-        });
-      }
-      req.user = {
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        role: session.user.role
-      };
-      if (roles.length && !roles.includes(req.user.role)) {
-        return res.status(400).json({
-          success: false,
-          message: "You are not authorized"
-        });
-      }
-      next();
-    } catch (error) {
-      next(error);
     }
+    req.user = {
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.name,
+      role: session.user.role
+    };
+    if (roles.length && !roles.includes(req.user.role)) {
+      return res.status(400).json({
+        success: false,
+        message: "You are not authorized"
+      });
+    }
+    next();
   };
 };
 
@@ -1058,7 +1016,7 @@ var Authcontroller = {
 
 // src/modules/authMe/auth.routes.ts
 var router4 = express4.Router();
-router4.get("/", middleWare("CUSTOMER" /* CUSTOMER */, "ADMIN" /* ADMIN */, "PROVIDER" /* PROVIDER */), Authcontroller.getCurrentUser);
+router4.get("/", middleWare("ADMIN" /* ADMIN */, "CUSTOMER" /* CUSTOMER */, "PROVIDER" /* PROVIDER */), Authcontroller.getCurrentUser);
 router4.patch("/update", middleWare("CUSTOMER" /* CUSTOMER */, "ADMIN" /* ADMIN */, "PROVIDER" /* PROVIDER */), Authcontroller.updateCurrentUser);
 var AuthRouter = router4;
 
@@ -1461,10 +1419,10 @@ var ReviewsController = {
 
 // src/modules/reviews/reviews.routes.ts
 var router6 = Router6();
-router6.get("/hot-deals", ReviewsController.getHotDeals);
 router6.get("/can-review/:mealId", middleWare("CUSTOMER" /* CUSTOMER */), ReviewsController.canReview);
 router6.post("/", middleWare("CUSTOMER" /* CUSTOMER */), ReviewsController.createReview);
 router6.get("/meal/:mealId", middleWare("ADMIN" /* ADMIN */, "CUSTOMER" /* CUSTOMER */, "PROVIDER" /* PROVIDER */), ReviewsController.getMealReviews);
+router6.get("/hot-deals", ReviewsController.getHotDeals);
 var ReviewsRouter = router6;
 
 // src/middlewares/notFound.ts
@@ -1609,26 +1567,10 @@ var AnalyticsRouter = router7;
 // src/app.ts
 var app = express6();
 app.use(express6.json());
-var allowedOrigins = [
-  process.env.APP_URL || "http://localhost:3000",
-  process.env.PROD_APP_URL
-  // Production frontend URL
-].filter(Boolean);
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const isAllowed = allowedOrigins.includes(origin) || /^https:\/\/urbaneats-frontend.*\.vercel\.app$/.test(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin);
-      if (isAllowed) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
-    exposedHeaders: ["Set-Cookie"]
+    origin: process.env.APP_URL || "http://localhost:3000",
+    credentials: true
   })
 );
 app.all("/api/auth/*splat", toNodeHandler(auth));
